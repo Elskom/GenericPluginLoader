@@ -26,6 +26,8 @@ namespace Elskom.Generic.Libs
         /// Loads plugins with the specified plugin interface type.
         /// </summary>
         /// <param name="path">The path to look for plugins to load.</param>
+        /// <param name="saveToZip">Tells this function to see if the plugin was saved to a zip file and it's pdb file as well.</param>
+        /// <param name="loadPDBFile">Tells the method to load the plugins pdb file or not. Ignored and loaded anyway when a debugger is attached.</param>
         /// <returns>A list of plugins loaded that derive from the specified type.</returns>
         public static ICollection<T> LoadPlugins(string path, bool saveToZip = false, bool loadPDBFile = false)
         {
