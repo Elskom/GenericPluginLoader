@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018, Els_kom org.
+// Copyright (c) 2018, Els_kom org.
 // https://github.com/Elskom/
 // All rights reserved.
 // license: MIT, see LICENSE for more details.
@@ -17,17 +17,17 @@ namespace Elskom.Generic.Libs
     using System.Reflection;
 
     /// <summary>
-    /// Generic Els_kom plugin loader.
+    /// A generic loader for plugins.
     /// </summary>
     /// <typeparam name="T">The type to look for when loading plugins.</typeparam>
-    internal static class GenericPluginLoader<T>
+    public static class GenericPluginLoader<T>
     {
         /// <summary>
         /// Loads plugins with the specified plugin interface type.
         /// </summary>
         /// <param name="path">The path to look for plugins to load.</param>
         /// <returns>A list of plugins loaded that derive from the specified type.</returns>
-        internal static ICollection<T> LoadPlugins(string path)
+        public static ICollection<T> LoadPlugins(string path, bool saveToZip = false, bool loadPDBFile = false)
         {
             string[] dllFileNames = null;
             if (Directory.Exists(path))
@@ -38,8 +38,6 @@ namespace Elskom.Generic.Libs
             // try to load from a zip as well if plugins are installed in both places.
             var zippath = $"{path}.zip";
             ICollection<T> plugins = new List<T>();
-            int.TryParse(SettingsFile.Settingsxml?.TryRead("SaveToZip"), out var saveToZip1);
-            var saveToZip = Convert.ToBoolean(saveToZip1);
 
             // handle when path points to a zip file.
             if (Directory.Exists(path) || File.Exists(zippath))
@@ -49,9 +47,7 @@ namespace Elskom.Generic.Libs
                 {
                     foreach (var dllFile in dllFileNames)
                     {
-                        SettingsFile.Settingsxml?.ReopenFile();
-                        int.TryParse(SettingsFile.Settingsxml?.TryRead("LoadPDB"), out var tempint);
-                        var loadPDB = Convert.ToBoolean(tempint) ? Convert.ToBoolean(tempint) : Debugger.IsAttached;
+                        var loadPDB = loadPDBFile ? loadPDBFile : Debugger.IsAttached;
                         try
                         {
                             var assembly = loadPDB ?
@@ -74,9 +70,7 @@ namespace Elskom.Generic.Libs
                         // just lookup the dlls here. The LoadFromZip method will load the pdb’s if they are deemed needed.
                         if (entry.FullName.EndsWith(".dll"))
                         {
-                            SettingsFile.Settingsxml?.ReopenFile();
-                            int.TryParse(SettingsFile.Settingsxml?.TryRead("LoadPDB"), out var tempint);
-                            var assembly = ZipAssembly.LoadFromZip(zippath, entry.FullName, Convert.ToBoolean(tempint));
+                            var assembly = ZipAssembly.LoadFromZip(zippath, entry.FullName, loadPDBFile);
                             assemblies.Add(assembly);
                         }
                     }
