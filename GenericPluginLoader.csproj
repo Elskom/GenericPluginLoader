@@ -11,7 +11,7 @@
 		<RepositoryUrl>https://github.com/Elskom/GenericPluginLoader/</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/Elskom/GenericPluginLoader/</PackageProjectUrl>
 		<PackageLicenseUrl>https://github.com/Elskom/GenericPluginLoader/blob/master/LICENSE</PackageLicenseUrl>
-		<Copyright>Copyright (c) 2018</Copyright>
+		<Copyright>Copyright (c) 2018-2019</Copyright>
 		<Description>A c# generc plugin loader.</Description>
 		<PackageReleaseNotes>Added .NET Core 3.0 and 2.2 to target frameworks.</PackageReleaseNotes>
 		<Version>1.0.1</Version>
