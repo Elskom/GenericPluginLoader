@@ -20,8 +20,15 @@ namespace Elskom.Generic.Libs
     /// A generic loader for plugins.
     /// </summary>
     /// <typeparam name="T">The type to look for when loading plugins.</typeparam>
-    public static class GenericPluginLoader<T>
+    public class GenericPluginLoader<T>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GenericPluginLoader{T}"/> class.
+        /// </summary>
+        public GenericPluginLoader()
+        {
+        }
+
         /// <summary>
         /// Loads plugins with the specified plugin interface type.
         /// </summary>
@@ -29,7 +36,7 @@ namespace Elskom.Generic.Libs
         /// <param name="saveToZip">Tells this function to see if the plugin was saved to a zip file and it's pdb file as well.</param>
         /// <param name="loadPDBFile">Tells the method to load the plugins pdb file or not. Ignored and loaded anyway when a debugger is attached.</param>
         /// <returns>A list of plugins loaded that derive from the specified type.</returns>
-        public static ICollection<T> LoadPlugins(string path, bool saveToZip = false, bool loadPDBFile = false)
+        public ICollection<T> LoadPlugins(string path, bool saveToZip = false, bool loadPDBFile = false)
         {
             string[] dllFileNames = null;
             if (Directory.Exists(path))
