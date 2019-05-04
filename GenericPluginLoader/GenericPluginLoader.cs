@@ -14,6 +14,7 @@ namespace Elskom.Generic.Libs
     using System.Diagnostics;
     using System.IO;
     using System.IO.Compression;
+    using System.Messaging;
     using System.Reflection;
 
     /// <summary>
@@ -28,6 +29,11 @@ namespace Elskom.Generic.Libs
         public GenericPluginLoader()
         {
         }
+
+        /// <summary>
+        /// Triggers when the Plugin Loader has a message to send to the application.
+        /// </summary>
+        public static event EventHandler<MessageEventArgs> PluginLoaderMessage;
 
         /// <summary>
         /// Loads plugins with the specified plugin interface type.
@@ -93,20 +99,33 @@ namespace Elskom.Generic.Libs
                 {
                     if (assembly != null)
                     {
-                        var types = assembly.GetTypes();
-                        foreach (var type in types)
+                        try
                         {
-                            if (type.IsInterface || type.IsAbstract)
+                            var types = assembly.GetTypes();
+                            foreach (var type in types)
                             {
-                                continue;
-                            }
-                            else
-                            {
-                                if (type.GetInterface(pluginType.FullName) != null)
+                                if (type.IsInterface || type.IsAbstract)
                                 {
-                                    pluginTypes.Add(type);
+                                    continue;
+                                }
+                                else
+                                {
+                                    if (type.GetInterface(pluginType.FullName) != null)
+                                    {
+                                        pluginTypes.Add(type);
+                                    }
                                 }
                             }
+                        }
+                        catch (ReflectionTypeLoadException ex)
+                        {
+                            var exMsg = string.Empty;
+                            foreach (var exceptions in ex.LoaderExceptions)
+                            {
+                                exMsg += $"{exceptions.Message}{Environment.NewLine}{exceptions.StackTrace}{Environment.NewLine}";
+                            }
+
+                            PluginLoaderMessage?.Invoke(this, new MessageEventArgs(exMsg, "Error!", ErrorLevel.Error));
                         }
                     }
                 }

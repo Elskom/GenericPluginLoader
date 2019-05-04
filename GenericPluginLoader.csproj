@@ -18,6 +18,10 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<ProduceReferenceAssembly>true</ProduceReferenceAssembly>
 		<NoWarn>$(NoWarn);NU5104;NU5118</NoWarn>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>Elskom.snk</AssemblyOriginatorKeyFile>
+		<DelaySign>false</DelaySign>
+		<PackageOutputPath Condition="'$(SolutionName)' == 'build_all_packages'">$(MSBuildThisFileDirectory)..\artifacts\</PackageOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -52,6 +56,9 @@
 		<TfmSpecificPackageFile Include="$(ProjectDir)/$(ProjectName).ruleset">
 			<PackagePath>src/$(ProjectName)/$(ProjectName).ruleset</PackagePath>
 		</TfmSpecificPackageFile>
+		<TfmSpecificPackageFile Include="$(ProjectDir)/Elskom.snk">
+			<PackagePath>src/$(ProjectName)/Elskom.snk</PackagePath>
+		</TfmSpecificPackageFile>
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -74,14 +81,20 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Remove=".git" />
 		<None Remove=".gitignore" />
 		<None Remove="appveyor.yml" />
+		<None Remove="azure-pipelines.yml" />
 		<None Remove="LICENSE" />
 		<None Remove="readme.md" />
 		<None Remove="stylecop.json" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="GitBuildInfo" Version="0.18.0">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
@@ -98,13 +111,34 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="ZipAssembly">
+		<Reference Include="System.IO.Compression" Condition="$(TargetFramework.StartsWith('net4'))" />
+	</ItemGroup>
+
+  <ItemGroup Condition="Exists('../ZipAssembly/ZipAssembly.csproj')">
+    <ProjectReference Include="../ZipAssembly/ZipAssembly.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!Exists('../ZipAssembly/ZipAssembly.csproj')">
+    <PackageReference Include="ZipAssembly">
 			<Version>1.1.2</Version>
 		</PackageReference>
-	</ItemGroup>
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('..\GitInformation\src\GitInformation\AraHaan.GitInformation.csproj')">
+    <ProjectReference Include="..\GitInformation\src\GitInformation\AraHaan.GitInformation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!Exists('..\GitInformation\src\GitInformation\AraHaan.GitInformation.csproj')">
+    <PackageReference Include="AraHaan.GitInformation">
+      <Version>1.0.0</Version>
+    </PackageReference>
+  </ItemGroup>
 
 	<ItemGroup>
 		<AdditionalFiles Include="stylecop.json" />
 	</ItemGroup>
 
+  <Target Name="GitBuildInfo" BeforeTargets="PrepareForBuild">
+    <GitBuildInfoGenericTask OutputPath="$(ProjectDir)\GitAssemblyInfo.cs" AssemblyType="Elskom.Generic.Libs.GenericPluginLoader" />
+  </Target>
 </Project>
