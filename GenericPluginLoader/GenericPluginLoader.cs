@@ -24,13 +24,6 @@ namespace Elskom.Generic.Libs
     public class GenericPluginLoader<T>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="GenericPluginLoader{T}"/> class.
-        /// </summary>
-        public GenericPluginLoader()
-        {
-        }
-
-        /// <summary>
         /// Triggers when the Plugin Loader has a message to send to the application.
         /// </summary>
         public static event EventHandler<MessageEventArgs> PluginLoaderMessage;
@@ -83,7 +76,7 @@ namespace Elskom.Generic.Libs
                     foreach (var entry in zipFile.Entries)
                     {
                         // just lookup the dlls here. The LoadFromZip method will load the pdb’s if they are deemed needed.
-                        if (entry.FullName.EndsWith(".dll"))
+                        if (entry.FullName.EndsWith(".dll", StringComparison.Ordinal))
                         {
                             var assembly = ZipAssembly.LoadFromZip(zippath, entry.FullName, loadPDBFile);
                             assemblies.Add(assembly);
