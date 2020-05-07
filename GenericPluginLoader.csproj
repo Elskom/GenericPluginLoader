@@ -88,7 +88,7 @@
 
   <ItemGroup Condition="!Exists('../ZipAssembly/ZipAssembly.csproj') OR '$(SolutionName)' != 'build_all_packages'">
     <PackageReference Include="ZipAssembly">
-      <Version>1.1.3-preview-97633499</Version>
+      <Version>1.1.3-preview-98011214</Version>
     </PackageReference>
   </ItemGroup>
 
