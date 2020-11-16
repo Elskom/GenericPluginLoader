@@ -67,6 +67,11 @@ namespace Elskom.Generic.Libs
                         {
                             // ignore the error and load the other files.
                         }
+                        catch (FileLoadException)
+                        {
+                            var assembly = Assembly.LoadFrom(dllFile);
+                            assemblies.Add(assembly);
+                        }
                     }
                 }
 
@@ -79,7 +84,10 @@ namespace Elskom.Generic.Libs
                         if (entry.FullName.EndsWith(".dll", StringComparison.Ordinal))
                         {
                             var assembly = ZipAssembly.LoadFromZip(zippath, entry.FullName, loadPDBFile);
-                            assemblies.Add(assembly);
+                            if (assembly != null)
+                            {
+                                assemblies.Add(assembly);
+                            }
                         }
                     }
 
