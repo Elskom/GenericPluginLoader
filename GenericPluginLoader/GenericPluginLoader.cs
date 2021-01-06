@@ -16,6 +16,7 @@ namespace Elskom.Generic.Libs
     using System.IO.Compression;
     using System.Messaging;
     using System.Reflection;
+    using System.Text;
 
     /// <summary>
     /// A generic loader for plugins.
@@ -58,10 +59,20 @@ namespace Elskom.Generic.Libs
                         var loadPDB = loadPDBFile ? loadPDBFile : Debugger.IsAttached;
                         try
                         {
-                            var assembly = loadPDB ?
-                                Assembly.Load(File.ReadAllBytes(dllFile), File.ReadAllBytes(dllFile.Replace("dll", "pdb"))) :
-                                Assembly.Load(File.ReadAllBytes(dllFile));
-                            assemblies.Add(assembly);
+                            var asmFile = File.ReadAllBytes(dllFile);
+                            try
+                            {
+                                var pdbFile = loadPDB ? File.ReadAllBytes(dllFile.Replace("dll", "pdb")) : null;
+                                var assembly = loadPDB ?
+                                    Assembly.Load(asmFile, pdbFile) :
+                                    Assembly.Load(asmFile);
+                                assemblies.Add(assembly);
+                            }
+                            catch (FileNotFoundException)
+                            {
+                                var assembly = Assembly.Load(asmFile);
+                                assemblies.Add(assembly);
+                            }
                         }
                         catch (BadImageFormatException)
                         {
@@ -71,6 +82,10 @@ namespace Elskom.Generic.Libs
                         {
                             var assembly = Assembly.LoadFrom(dllFile);
                             assemblies.Add(assembly);
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            // ignore the error and load other files.
                         }
                     }
                 }
@@ -105,28 +120,28 @@ namespace Elskom.Generic.Libs
                             var types = assembly.GetTypes();
                             foreach (var type in types)
                             {
-                                if (type.IsInterface || type.IsAbstract)
+                                if (!type.IsInterface && !type.IsAbstract && type.GetInterface(pluginType.FullName) != null)
                                 {
-                                    continue;
-                                }
-                                else
-                                {
-                                    if (type.GetInterface(pluginType.FullName) != null)
-                                    {
-                                        pluginTypes.Add(type);
-                                    }
+                                    pluginTypes.Add(type);
                                 }
                             }
                         }
                         catch (ReflectionTypeLoadException ex)
                         {
-                            var exMsg = string.Empty;
+                            var exMsg = new StringBuilder();
                             foreach (var exceptions in ex.LoaderExceptions)
                             {
-                                exMsg += $"{exceptions.Message}{Environment.NewLine}{exceptions.StackTrace}{Environment.NewLine}";
+                                exMsg.Append($"{exceptions.Message}{Environment.NewLine}{exceptions.StackTrace}{Environment.NewLine}");
                             }
 
-                            PluginLoaderMessage?.Invoke(this, new MessageEventArgs(exMsg, "Error!", ErrorLevel.Error));
+                            PluginLoaderMessage?.Invoke(null, new MessageEventArgs(exMsg.ToString(), "Error!", ErrorLevel.Error));
+                        }
+                        catch (ArgumentNullException ex)
+                        {
+                            var exMsg = string.Empty;
+                            LogException(ex, ref exMsg);
+
+                            PluginLoaderMessage?.Invoke(null, new MessageEventArgs(exMsg, "Error!", ErrorLevel.Error));
                         }
                     }
                 }
@@ -141,6 +156,15 @@ namespace Elskom.Generic.Libs
             }
 
             return plugins;
+        }
+
+        private static void LogException(Exception ex, ref string exMsg)
+        {
+            exMsg += $"{ex.Message}{Environment.NewLine}{ex.StackTrace}{Environment.NewLine}";
+            if (ex.InnerException != null)
+            {
+                LogException(ex.InnerException, ref exMsg);
+            }
         }
     }
 }
