@@ -6,3 +6,5 @@
 ![Build Status](https://github.com/Elskom/GenericPluginLoader/workflows/.NET%20Core%20%28build%20pull%20request%29/badge.svg)
 
 A c# generc plugin loader.
+
+MOVED TO https://github.com/Elskom/Sdk/
